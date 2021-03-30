@@ -1,0 +1,14 @@
+library(future)
+library(sparklyr)
+
+sc <- spark_connect(master = "local", spark_version = "2.3.0")
+
+if(file.exists("source")) unlink("source", TRUE)
+if(file.exists("source-out")) unlink("source-out", TRUE)
+
+stream_generate_test(iterations = 1)
+read_folder <- stream_read_csv(sc, "source") 
+write_output <- stream_write_csv(read_folder, "source-out")
+invisible(future(stream_generate_test(interval = 0.5)))
+
+stream_view(write_output)
